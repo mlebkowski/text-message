@@ -1,0 +1,26 @@
+{
+	"name": "mlebkowski/text-message-sender",
+	"description": "Send text messages using one of many providers",
+	"minimum-stability": "stable",
+	"authors": [
+		{
+			"name": "Maciej Łebkowski",
+			"email": "m.lebkowski@gmail.com"
+		}
+	],
+	"autoload": {
+		"psr-0": {
+			"Nassau\\TextMessage": "src/"
+		}
+	},
+	"suggest": {
+		"mlebkowski/mobitex": "Send messages via the SMSCenter API"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~3.7",
+		"mlebkowski/mobitex": "~1.0"
+	},
+	"require": {
+		"giggsey/libphonenumber-for-php": "~5.9"
+	}
+}
