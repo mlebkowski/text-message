@@ -3,13 +3,13 @@
 <phpunit bootstrap="tests/bootstrap.php" colors="true">
 	<testsuites>
 		<testsuite name="Text Message Sender Test Suite">
-			<directory>tests/TextMessage/</directory>
+			<directory>tests/Nassau/TextMessage/</directory>
 		</testsuite>
 	</testsuites>
 
 	<filter>
 		<whitelist>
-			<directory suffix=".php">src/TextMessage/</directory>
+			<directory suffix=".php">src/Nassau/TextMessage/</directory>
 		</whitelist>
 	</filter>
 </phpunit>
