@@ -2,6 +2,7 @@
 
 namespace Nassau\TextMessage;
 
+use Nassau\TextMessage\Normalizer\NumberNormalizerInterface;
 use Nassau\TextMessage\UnicodeRemover\UnicodeRemoverInterface;
 
 class TextMessageSender implements SenderInterface
@@ -27,14 +28,28 @@ class TextMessageSender implements SenderInterface
 	 * @var GSMTransportUtils
 	 */
 	private $transport;
+	/**
+	 * @var Normalizer\NumberNormalizerInterface
+	 */
+	private $normalizer;
 
 	/**
-	 * @param SenderInterface $sender
+	 * @param SenderInterface                      $sender
+	 * @param Normalizer\NumberNormalizerInterface $normalizer
 	 */
-	public function __construct(SenderInterface $sender)
+	public function __construct(SenderInterface $sender, NumberNormalizerInterface $normalizer = null)
 	{
 		$this->sender = $sender;
 		$this->transport = new GSMTransportUtils;
+		$this->setNormalizer($normalizer);
+	}
+
+	/**
+	 * @param \Nassau\TextMessage\Normalizer\NumberNormalizerInterface $normalizer
+	 */
+	public function setNormalizer($normalizer)
+	{
+		$this->normalizer = $normalizer;
 	}
 
 	public function setUnicodeRemover(UnicodeRemoverInterface $remover)
@@ -73,7 +88,9 @@ class TextMessageSender implements SenderInterface
 		$this->splitLongMessages = (bool) $split;
 		if ($split && false === function_exists('mb_strlen'))
 		{
+			// @codeCoverageIgnoreStart
 			throw new \RuntimeException('mb_strlen function is required for splitting to work!');
+			// @codeCoverageIgnoreEnd
 		}
 		return $this;
 	}
@@ -89,7 +106,7 @@ class TextMessageSender implements SenderInterface
 		return $this->sender->verifyNumber($phone);
 	}
 
-	public function send(Message $message)
+	public function send(Message $message, PhoneNumber $recipient)
 	{
 		$type = $message->getType();
 		$text = $this->getPrefix() . trim($message->getContent());
@@ -118,9 +135,14 @@ class TextMessageSender implements SenderInterface
 			$text = array($text);
 		}
 
+		if ($this->normalizer)
+		{
+			$recipient = $this->normalizer->normalizeNumber($recipient);
+		}
+
 		foreach ($text as $contentPart)
 		{
-			$this->sender->send(new Message($contentPart, $message->getRecipient(), $type));
+			$this->sender->send(new Message($contentPart, $type), $recipient);
 		}
 	}
 

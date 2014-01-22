@@ -12,18 +12,13 @@ class Message
 	 */
 	private $content;
 	/**
-	 * @var \Nassau\TextMessage\PhoneNumber
-	 */
-	private $recipient;
-	/**
 	 * @var string
 	 */
 	private $type;
 
-	public function __construct($content, PhoneNumber $recipient, $type = self::TYPE_SMS)
+	public function __construct($content, $type = self::TYPE_SMS)
 	{
 		$this->content = $content;
-		$this->recipient = $recipient;
 		$this->type = $type;
 		if (false === in_array($type, [self::TYPE_SMS, self::TYPE_UNICODE]))
 		{
@@ -37,14 +32,6 @@ class Message
 	public function getContent()
 	{
 		return $this->content;
-	}
-
-	/**
-	 * @return \Nassau\TextMessage\PhoneNumber
-	 */
-	public function getRecipient()
-	{
-		return $this->recipient;
 	}
 
 	/**

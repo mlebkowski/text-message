@@ -2,6 +2,7 @@
 
 namespace Nassau\TextMessage\Adapter;
 
+use Mobitex\Sender;
 use Nassau\TextMessage\Message;
 use Nassau\TextMessage\PhoneNumber;
 use Mobitex\Exception as MobitexException;
@@ -25,7 +26,7 @@ class MobitexAdapterTest extends \PHPUnit_Framework_TestCase
 	{
 		$number = '123456789';
 		$content = "lorem ipsum";
-		$message = new Message($content, new PhoneNumber($number));
+		$message = new Message($content);
 
 		/** @var \PHPUnit_Framework_MockObject_MockObject|\Mobitex\Sender $mock */
 		$mock = $this->getMock('\\Mobitex\\Sender', ['sendMessage'], [], '', false);
@@ -36,7 +37,7 @@ class MobitexAdapterTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$sender = new MobitexAdapter($mock);
-		$sender->send($message);
+		$sender->send($message, new PhoneNumber($number));
 	}
 
 	/**
@@ -46,7 +47,7 @@ class MobitexAdapterTest extends \PHPUnit_Framework_TestCase
 	{
 		$number = '123456789';
 		$content = "lorem ipsum";
-		$message = new Message($content, new PhoneNumber($number));
+		$message = new Message($content);
 
 		/** @var \PHPUnit_Framework_MockObject_MockObject|\Mobitex\Sender $mock */
 		$mock = $this->getMock('\\Mobitex\\Sender', ['sendMessage'], [], '', false);
@@ -55,8 +56,35 @@ class MobitexAdapterTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$sender = new MobitexAdapter($mock);
-		$sender->send($message);
+		$sender->send($message, new PhoneNumber($number));
+	}
 
+	/**
+	 * @dataProvider dataSourceMessageTypesAndContents
+	 */
+	public function testLongMessagesAreSentAsConcat($messageType, $expectedType, $message)
+	{
+		/** @var \PHPUnit_Framework_MockObject_MockObject|\Mobitex\Sender $mock */
+		$mock = $this->getMock('\\Mobitex\\Sender', ['sendMessage'], [], '', false);
+		$mock->expects($this->once())->method('sendMessage')->with(
+			$this->anything(),
+			$this->anything(),
+			$this->equalTo($expectedType)
+		);
+
+		$sender = new MobitexAdapter($mock);
+		$sender->send(new Message($message, $messageType), new PhoneNumber(0));
+
+	}
+
+	public function dataSourceMessageTypesAndContents()
+	{
+		return [
+			[Message::TYPE_SMS, Sender::TYPE_SMS, str_repeat('x', 100)],
+			[Message::TYPE_SMS, Sender::TYPE_CONCAT, str_repeat('x', 200)],
+			[Message::TYPE_UNICODE, Sender::TYPE_UNICODE, str_repeat('x', 50)],
+			[Message::TYPE_UNICODE, Sender::TYPE_UNICODE_CONCAT, str_repeat('x', 100)],
+		];
 	}
 }
  

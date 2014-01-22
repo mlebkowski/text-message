@@ -14,9 +14,10 @@ interface SenderInterface
 	public function verifyNumber(PhoneNumber $number);
 
 	/**
-	 * @param Message $message
+	 * @param Message     $message
+	 * @param PhoneNumber $recipient
 	 * @throws SenderException
 	 * @return bool
 	 */
-	public function send(Message $message);
+	public function send(Message $message, PhoneNumber $recipient);
 }

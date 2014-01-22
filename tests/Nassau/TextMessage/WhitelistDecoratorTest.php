@@ -13,7 +13,7 @@ class WhitelistDecoratorTest extends \PHPUnit_Framework_TestCase
 		$sender->expects($this->never())->method('send');
 		$sender = new WhitelistDecorator($sender, [$phone]);
 
-		$sender->send(new Message("", new PhoneNumber(123456789)));
+		$sender->send(new Message(""), new PhoneNumber(123456789));
 
 	}
 	public function testWhitelistPassesRightNumber()
@@ -25,7 +25,7 @@ class WhitelistDecoratorTest extends \PHPUnit_Framework_TestCase
 		$sender->expects($this->once())->method('send');
 		$sender = new WhitelistDecorator($sender, [$phone]);
 
-		$sender->send(new Message("", new PhoneNumber($phone)));
+		$sender->send(new Message(""), new PhoneNumber($phone));
 
 	}
 }

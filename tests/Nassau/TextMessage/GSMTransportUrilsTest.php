@@ -45,7 +45,6 @@ class GSMTransportUrilsTest extends \PHPUnit_Framework_TestCase
 		$text = "aa" . GSMTransportUtils::ESCAPE_CHAR . "bbccc";
 		$expected = ["aa", GSMTransportUtils::ESCAPE_CHAR . "bb", "ccc"];
 		$splitter = new GSMTransportUtils();
-//var_dump($splitter->splitMessage($text, 1));
 		$this->assertEquals($expected, $splitter->splitMessage($text, 3));
 
 	}

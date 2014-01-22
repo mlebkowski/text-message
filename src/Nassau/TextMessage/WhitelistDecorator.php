@@ -37,14 +37,13 @@ class WhitelistDecorator implements SenderInterface
 		return $this->sender->verifyNumber($number);
 	}
 
-	public function send(Message $message)
+	public function send(Message $message, PhoneNumber $recipient)
 	{
-		$number = $message->getRecipient();
 		foreach ($this->whitelist as $whitelisted)
 		{
-			if ($number->equals($whitelisted))
+			if ($recipient->equals($whitelisted))
 			{
-				return $this->sender->send($message);
+				return $this->sender->send($message, $recipient);
 			}
 		}
 		return true;
