@@ -2,16 +2,19 @@
 
 namespace Nassau\TextMessage\Adapter;
 
+use libphonenumber\PhoneNumber;
 use Mobitex\Sender;
 use Mobitex\Exception as MobitexException;
 use Nassau\TextMessage\GSMTransportUtils;
 use Nassau\TextMessage\Message;
-use Nassau\TextMessage\PhoneNumber;
+use Nassau\TextMessage\NeedsNumberVerificationInterface;
 use Nassau\TextMessage\SenderException;
 use Nassau\TextMessage\SenderInterface;
 
-class MobitexAdapter implements SenderInterface
+class MobitexAdapter implements SenderInterface, NeedsNumberVerificationInterface
 {
+	const MAX_LENGTH_ASCII = 459;
+	const MAX_LENGTH_UNICODE = 201;
 	/**
 	 * @var \Mobitex\Sender
 	 */
@@ -28,22 +31,42 @@ class MobitexAdapter implements SenderInterface
 	/**
 	 * Test if sender can use this number
 	 *
-	 * @param \Nassau\TextMessage\PhoneNumber $number
+	 * @param PhoneNumber $number
 	 *
 	 * @return bool
 	 */
 	public function verifyNumber(PhoneNumber $number)
 	{
-		return $this->sender->verifyNumber($number->getNumber());
+		$sPhone = $number->getCountryCode() . $number->getNationalNumber();
+		return $this->sender->verifyNumber($sPhone);
 	}
 
 	public function send(Message $message, PhoneNumber $recipient)
 	{
-		$number = $recipient->getNumber();
+		$number = $recipient->getCountryCode() . $recipient->getNationalNumber();
 		$text = $message->getContent();
+
 		try
 		{
-			return $this->sender->sendMessage($number, $text, $this->getTypeForMessage($message));
+			$maxLen = $message->getType() === Message::TYPE_ASCII ? self::MAX_LENGTH_ASCII : self::MAX_LENGTH_UNICODE;
+			$textPreparedForSms = $this->transport->prepareTextForMessage($text);
+
+			if (mb_strlen($textPreparedForSms) > $maxLen)
+			{
+				$text = $this->transport->splitMessage($textPreparedForSms, $maxLen);
+
+				$text = array_map($this->transport, $text);
+			}
+
+			if (false === is_array($text))
+			{
+				$text = array($text);
+			}
+
+			foreach ($text as $contentPart)
+			{
+				$this->sender->sendMessage($number, $contentPart, $this->getTypeForMessage($message));
+			}
 		}
 		catch (MobitexException $e)
 		{
@@ -51,7 +74,7 @@ class MobitexAdapter implements SenderInterface
 		}
 	}
 
-	private function getMaxLength($type)
+	private function getSinglePartMaxLength($type)
 	{
 		switch ($type)
 		{
@@ -59,10 +82,6 @@ class MobitexAdapter implements SenderInterface
 				return 160;
 			case Sender::TYPE_UNICODE:
 				return 70;
-			case Sender::TYPE_CONCAT:
-				return 459;
-			case Sender::TYPE_UNICODE_CONCAT:
-				return 201;
 		}
 		throw new \InvalidArgumentException('Never happens :D');
  	}
@@ -72,10 +91,10 @@ class MobitexAdapter implements SenderInterface
 		$msg = $this->transport->prepareTextForMessage($message->getContent());
 		switch ($message->getType())
 		{
-			case Message::TYPE_SMS:
-				return (mb_strlen($msg) <= $this->getMaxLength(Sender::TYPE_SMS)) ? Sender::TYPE_SMS : Sender::TYPE_CONCAT;
+			case Message::TYPE_ASCII:
+				return (mb_strlen($msg) <= $this->getSinglePartMaxLength(Sender::TYPE_SMS)) ? Sender::TYPE_SMS : Sender::TYPE_CONCAT;
 			case Message::TYPE_UNICODE:
-				return (mb_strlen($msg) <= $this->getMaxLength(Sender::TYPE_UNICODE)) ? Sender::TYPE_UNICODE : Sender::TYPE_UNICODE_CONCAT;
+				return (mb_strlen($msg) <= $this->getSinglePartMaxLength(Sender::TYPE_UNICODE)) ? Sender::TYPE_UNICODE : Sender::TYPE_UNICODE_CONCAT;
 		}
 		throw new \InvalidArgumentException('Never happens :D');
 	}

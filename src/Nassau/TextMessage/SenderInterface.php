@@ -2,16 +2,10 @@
 
 namespace Nassau\TextMessage;
 
+use libphonenumber\PhoneNumber;
+
 interface SenderInterface
 {
-	/**
-	 * Test if sender can use this number
-	 *
-	 * @param \Nassau\TextMessage\PhoneNumber $number
-	 *
-	 * @return bool
-	 */
-	public function verifyNumber(PhoneNumber $number);
 
 	/**
 	 * @param Message     $message

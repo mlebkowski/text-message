@@ -4,7 +4,7 @@ namespace Nassau\TextMessage;
 
 class Message
 {
-	const TYPE_SMS = 'sms';
+	const TYPE_ASCII = 'sms';
 	const TYPE_UNICODE = 'unicode';
 
 	/**
@@ -16,11 +16,11 @@ class Message
 	 */
 	private $type;
 
-	public function __construct($content, $type = self::TYPE_SMS)
+	public function __construct($content, $type = self::TYPE_ASCII)
 	{
 		$this->content = $content;
 		$this->type = $type;
-		if (false === in_array($type, [self::TYPE_SMS, self::TYPE_UNICODE]))
+		if (false === in_array($type, [self::TYPE_ASCII, self::TYPE_UNICODE]))
 		{
 			throw new \InvalidArgumentException('Unknown Text Message Type: ' . $type);
 		}
@@ -40,18 +40,6 @@ class Message
 	public function getType()
 	{
 		return $this->type;
-	}
-
-	public function getMaxLength()
-	{
-		switch ($this->type)
-		{
-			case self::TYPE_SMS:
-				return 459;
-			case self::TYPE_UNICODE:
-				return 201;
-		}
-		return null;
 	}
 
 	function __toString()

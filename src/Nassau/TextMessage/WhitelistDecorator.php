@@ -3,10 +3,12 @@
 
 namespace Nassau\TextMessage;
 
+use libphonenumber\PhoneNumber;
+
 class WhitelistDecorator implements SenderInterface
 {
 	/**
-	 * @var \Nassau\TextMessage\PhoneNumber[]
+	 * @var PhoneNumber[]
 	 */
 	private $whitelist;
 	/**
@@ -14,27 +16,14 @@ class WhitelistDecorator implements SenderInterface
 	 */
 	private $sender;
 
+	/**
+	 * @param SenderInterface $sender
+	 * @param PhoneNumber[]   $whitelist
+	 */
 	public function __construct(SenderInterface $sender, $whitelist)
 	{
 		$this->sender = $sender;
-		$this->whitelist = array_map(function ($number)
-		{
-			return $number instanceof PhoneNumber ? $number : new PhoneNumber($number);
-		},
-		$whitelist);
-	}
-
-	/**
-	 * Test if sender can use this number
-	 *
-	 * @param \Nassau\TextMessage\PhoneNumber $number
-	 * @codeCoverageIgnore
-	 *
-	 * @return bool
-	 */
-	public function verifyNumber(PhoneNumber $number)
-	{
-		return $this->sender->verifyNumber($number);
+		$this->whitelist = $whitelist;
 	}
 
 	public function send(Message $message, PhoneNumber $recipient)
