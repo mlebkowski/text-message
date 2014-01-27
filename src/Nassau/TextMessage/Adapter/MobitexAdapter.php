@@ -10,8 +10,9 @@ use Nassau\TextMessage\Message;
 use Nassau\TextMessage\NeedsNumberVerificationInterface;
 use Nassau\TextMessage\SenderException;
 use Nassau\TextMessage\SenderInterface;
+use Nassau\TextMessage\SenderNameInterface;
 
-class MobitexAdapter implements SenderInterface, NeedsNumberVerificationInterface
+class MobitexAdapter implements SenderInterface, NeedsNumberVerificationInterface, SenderNameInterface
 {
 	const MAX_LENGTH_ASCII = 459;
 	const MAX_LENGTH_UNICODE = 201;
@@ -40,6 +41,12 @@ class MobitexAdapter implements SenderInterface, NeedsNumberVerificationInterfac
 		$sPhone = $number->getCountryCode() . $number->getNationalNumber();
 		return $this->sender->verifyNumber($sPhone);
 	}
+
+	public function setSenderName($senderName)
+	{
+		$this->sender->setFrom($senderName);
+	}
+
 
 	public function send(Message $message, PhoneNumber $recipient)
 	{

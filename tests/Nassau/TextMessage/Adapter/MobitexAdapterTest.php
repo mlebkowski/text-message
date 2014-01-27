@@ -33,7 +33,7 @@ class MobitexAdapterTest extends TestCase
 		$mock->expects($this->once())->method('sendMessage')->with(
 			$this->equalTo($number),
 			$this->equalTo($content),
-			$this->equalTo(Message::TYPE_ASCII)
+			$this->equalTo(Sender::TYPE_SMS)
 		);
 
 		$sender = new MobitexAdapter($mock);
@@ -89,7 +89,6 @@ class MobitexAdapterTest extends TestCase
 
 	public function testLongMessagesAreSplitted()
 	{
-		$message = new Message("");
 		$maxLen = MobitexAdapter::MAX_LENGTH_ASCII;
 
 		$contents = [
@@ -129,6 +128,18 @@ class MobitexAdapterTest extends TestCase
 
 		$sender = new MobitexAdapter($senderMock);
 		$sender->send(new Message($text), $this->getAnyPhoneNumber());
+	}
+
+	public function testFromIsSetOnMobitexSender()
+	{
+		$senderName = 'whatever';
+
+		/** @var \PHPUnit_Framework_MockObject_MockObject|Sender $senderMock */
+		$senderMock = $this->getMock('\\Mobitex\\Sender', ['setFrom'], [], '', false);
+		$senderMock->expects($this->once())->method('setFrom')->with($this->equalTo($senderName));
+		$sender = new MobitexAdapter($senderMock);
+
+		$sender->setSenderName($senderName);
 	}
 
 }
