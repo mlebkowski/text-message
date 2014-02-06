@@ -74,6 +74,7 @@ class MobitexAdapter implements SenderInterface, NeedsNumberVerificationInterfac
 			{
 				$this->sender->sendMessage($number, $contentPart, $this->getTypeForMessage($message));
 			}
+			return true;
 		}
 		catch (MobitexException $e)
 		{
